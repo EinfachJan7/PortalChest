@@ -1,0 +1,443 @@
+# Portal Chest System - Konfiguration
+# Version: 1.0.0
+# Minecraft 1.21.11
+# Format: MiniMessage (https://docs.adventure.kyori.net/minimessage/format.html)
+#
+# CONFIG-VERSION: 1.1.0 (wird von ConfigMigrator verwendet)
+config-version: "1.1.0"
+#
+# HIGHLIGHTS IN DIESER VERSION:
+# - Konfigurierbarer Storage (YAML oder MySQL)
+# - Partikel-System mit 3 verschiedenen Shapes (LINE, CIRCLE, SPIRAL)
+# - Debug-Modus für detaillierte Logs
+# - Globales Prefix für alle Messages
+# - Performance-Optimierungen
+#
+# Placeholders in Messages:
+# %player% = Spieler-Name
+# %location% = Chest-Location  
+# %level% = Upgrade-Level
+# %items% = Anzahl Items
+# %time% = Zeit zwischen Transfers
+# %cost% = Upgrade-Kosten
+# %have% = Deine Items/Currency
+# %currency% = Währungs-Name
+# %min-distance% = Minimale Distanz
+# %max-connections% = Maximale Verbindungen
+
+# ==================== ALLGEMEINE EINSTELLUNGEN ====================
+general:
+  # Prefix für alle Nachrichten (leer = kein Prefix)
+  prefix: "<dark_gray><italic:false>[<aqua><italic:false>PortalChest<dark_gray><italic:false>]"
+  
+  # Debug-Modus: Aktiviere für Detail-Logs
+  debug: false
+
+# ==================== NACHRICHTEN ====================
+messages:
+  # Globales Prefix - wird vor viele Messages vorangestellt
+  prefix: "<dark_gray><italic:false>[<aqua><italic:false>PortalChest<dark_gray><italic:false>]"
+  
+  # Allgemeine Fehler
+  general:
+    no-permission: "<red><italic:false>✘ Keine Berechtigung!"
+    player-only: "<red><italic:false>✘ Dieser Befehl ist nur für Spieler!"
+    player-not-found: "<red><italic:false>✘ Spieler nicht gefunden!"
+    cannot-trust-yourself: "<red><italic:false>✘ Du kannst dich nicht selbst berechtigen!"
+  linking:
+    sender-selected: "<green><italic:false>✓ Sender ausgewählt! <dark_gray><italic:false>(Blau)"
+    receiver-selected: "<green><italic:false>✓ Receiver ausgewählt! <dark_gray><italic:false>(Orange)"
+    select-receiver: "<dark_gray><italic:false>Wähle nun den Empfänger!"
+    link-success: "<green><bold><italic:false>Verbindung hergestellt!"
+    link-same-chest: "<red><italic:false>✘ Nicht dieselbe Chest!"
+    link-not-owner: "<red><italic:false>✘ Diese Chest gehört einem anderen Spieler!"
+    link-already-linked: "<red><italic:false>✘ Diese Chest ist bereits verbunden!"
+    link-too-close: "<red><italic:false>Chests zu nah! Min: <aqua><italic:false>%min-distance%<red><italic:false> Blöcke"
+    link-max-connections: "<red><italic:false>Maximum von <aqua><italic:false>%max-connections%<red><italic:false> Verbindungen erreicht!"
+    link-cross-world-denied: "<red><italic:false>Diese Verbindung ist nicht erlaubt!"
+    link-cancelled: "<red><bold><italic:false>Auswahl abgebrochen!"
+    no-selection: "<dark_gray><italic:false>Keine Chests ausgewählt!"
+  
+  # Access & GUI
+  access:
+    no-permission: "<red><italic:false>✘ Diese Chest gehört dir nicht!"
+    need-shift: "<dark_gray><italic:false>Halte SHIFT um diese Chest abzubauen!"
+    chest-removed: "<green><italic:false>✓ Portal Chest entfernt!"
+  
+  # Upgrade
+  upgrade:
+    success: "<green><bold><italic:false>Upgrade erfolgreich!"
+    max-level: "<aqua><italic:false>Maximale Stufe erreicht!"
+    not-enough-diamonds: "<red><italic:false>Nicht genug Diamanten! (<aqua><italic:false>%cost%<red><italic:false> benötigt)"
+    level-info: "%color%<italic:false>Level %level% <dark_gray><italic:false>(%items% Items/%time%)"
+  
+  # Error
+  error:
+    location-not-found: "<red><italic:false>Fehler: Location nicht gefunden!"
+    location-invalid: "<red><italic:false>Fehler: Location ungültig!"
+    chest-not-found: "<red><italic:false>Fehler: Chest nicht gefunden!"
+    no-permission-upgrade: "<red><italic:false>Du hast keine Berechtigung für diese Chest!"
+
+  # Linking-Modus
+  linking-mode:
+    active: "<green><bold><italic:false>✓ Portal Chest Level %level% platziert!"
+    waiting-receiver: "<dark_gray><italic:false>Platziere nun eine normale Kiste um sie zu verlinken!"
+    exit-hint: "<dark_gray><italic:false>Schreibe 'EXIT' um den Linking-Modus zu beenden."
+    chat-blocked: "<red><italic:false>✘ Du kannst im Linking-Modus nichts schreiben außer 'EXIT'!"
+    exit-exec: "<green><italic:false>✓ Linking-Modus beendet!"
+    not-in-mode: "<red><italic:false>Du bist nicht im Linking-Modus!"
+    chest-removed: "<green><bold><italic:false>✓ Portal Chest entfernt!"
+    restart-linking: "<dark_gray><italic:false>Platziere nun eine normale Kiste um die Verknüpfung wiederherzustellen!"
+    double-chest-error: "<red><italic:false>✘ Diese Kiste kann keine Doppelkiste sein!"
+    double-chest-no-upgrade: "<dark_gray><italic:false>Das Double-Chest-Upgrade ist nicht freigeschaltet."
+    double-chest-not-receiver: "<dark_gray><italic:false>Nur Receiver-Chests können Doppelkisten sein."
+
+  # Trust & Permissions
+  trust:
+    not-looking-at-chest: "<red><italic:false>✘ Schau auf deine Portal Chest!"
+    not-your-chest: "<red><italic:false>✘ Das ist nicht deine Chest!"
+    player-not-found: "<red><italic:false>✘ Spieler nicht gefunden!"
+    cannot-trust-yourself: "<red><italic:false>✘ Du kannst dich nicht selbst berechtigen!"
+    trust-added: "<green><italic:false>✓ %player% hat nun Zugriff auf diese Verbindung (Sender ↔ Receiver)!"
+    trust-added-target: "<green><italic:false>✓ %player% hat dir Zugriff auf diese Portal Chest Verbindung gegeben!"
+    trust-removed: "<green><italic:false>✓ %player% hat keinen Zugriff mehr auf diese Verbindung!"
+    trust-removed-target: "<red><italic:false>✘ %player% hat dir den Zugriff auf diese Portal Chest Verbindung entzogen!"
+    trustlist-header: "<color:#FFD700><bold>━━ Trust-Liste (%location%) ━━</bold></color>"
+    trustlist-owner: "<color:#00FF00>⭐ %player% <dark_gray>(Besitzer)"
+    trustlist-trusted: "<color:#FFD700>✓ %player%"
+    trustlist-empty: "<dark_gray>Keine weiteren Spieler berechtigt"
+
+# ==================== CHESTS ====================
+chests:
+  level-1:
+    name: "<blue><bold><italic:false>Portal Chest</bold></blue>"
+    lore:
+      - "<dark_gray><italic:false>Magische Chest mit</dark_gray>"
+      - "<dark_gray><italic:false>Portal-Eigenschaften</dark_gray>"
+      - ""
+      - "<white><italic:false>✦ Level 1 ✦</white>"
+      - "<dark_gray><italic:false>Transfer: <green><italic:false>%items% Items</green><dark_gray><italic:false>/%time%</dark_gray>"
+  
+  level-2:
+    name: "<green><bold><italic:false>Portal Chest [Level 2]</bold></green>"
+    lore:
+      - "<dark_gray><italic:false>Magische Chest mit</dark_gray>"
+      - "<dark_gray><italic:false>Portal-Eigenschaften</dark_gray>"
+      - ""
+      - "<green><italic:false>✦ Level 2 ✦</green>"
+      - "<dark_gray><italic:false>Transfer: <green><italic:false>%items% Items</green><dark_gray><italic:false>/%time%</dark_gray>"
+  
+  level-3:
+    name: "<aqua><bold><italic:false>Portal Chest [Level 3]</bold></aqua>"
+    lore:
+      - "<dark_gray><italic:false>Magische Chest mit</dark_gray>"
+      - "<dark_gray><italic:false>Portal-Eigenschaften</dark_gray>"
+      - ""
+      - "<aqua><italic:false>✦ Level 3 ✦</aqua>"
+      - "<dark_gray><italic:false>Transfer: <green><italic:false>%items% Items</green><dark_gray><italic:false>/%time%</dark_gray>"
+  
+  level-4:
+    name: "<light_purple><bold><italic:false>Portal Chest [Level 4]</bold></light_purple>"
+    lore:
+      - "<dark_gray><italic:false>Magische Chest mit</dark_gray>"
+      - "<dark_gray><italic:false>Portal-Eigenschaften</dark_gray>"
+      - ""
+      - "<light_purple><italic:false>✦ Level 4 ✦</light_purple>"
+      - "<dark_gray><italic:false>Transfer: <green><italic:false>%items% Items</green><dark_gray><italic:false>/%time%</dark_gray>"
+  
+  level-5:
+    name: "<gold><bold><italic:false>Portal Chest [Level 5]</bold></gold>"
+    lore:
+      - "<dark_gray><italic:false>Magische Chest mit</dark_gray>"
+      - "<dark_gray><italic:false>Portal-Eigenschaften</dark_gray>"
+      - ""
+      - "<gold><italic:false>✦ Level 5 ✦</gold>"
+      - "<dark_gray><italic:false>Transfer: <green><italic:false>%items% Items</green><dark_gray><italic:false>/%time%</dark_gray>"
+  
+  level-6:
+    name: "<red><bold><italic:false>Portal Chest [Level 6]</bold></red>"
+    lore:
+      - "<dark_gray><italic:false>Magische Chest mit</dark_gray>"
+      - "<dark_gray><italic:false>Portal-Eigenschaften</dark_gray>"
+      - ""
+      - "<red><italic:false>✦ Level 6 ✦</red>"
+      - "<dark_gray><italic:false>Transfer: <green><italic:false>%items% Items</green><dark_gray><italic:false>/%time%</dark_gray>"
+
+# ==================== VERLINKTE CHESTS ====================
+linked-chests:
+  sender:
+    name: "<aqua><bold><italic:false>SENDER [LVL %level%]"
+  receiver:
+    name: "<gold><bold><italic:false>RECEIVER"
+
+# ==================== GUI ====================
+gui:
+  upgrade:
+    title: "Portal Chest Upgrade - Level %level%"
+    receiver-title: "Receiver Upgrades"
+    
+    # Slot-Positionen (0-26 für 27er Inventory)
+    current-level-slot: 11
+    arrow-slot: 13
+    next-level-slot: 15
+    double-chest-slot: 13  # Bei Receiver
+    
+    # Materials für Items
+    materials:
+      current-level: DIAMOND_BLOCK
+      next-level: EMERALD_BLOCK
+      arrow: ARROW
+      double-chest: ENDER_CHEST
+      glass-pane: GRAY_STAINED_GLASS_PANE
+      max-level: GOLD_BLOCK
+    
+    # Current Level Item
+    current-level-name: "✦ Aktuelles Level: %level% ✦"
+    current-level-lore:
+      - ""
+      - "<dark_gray>Transfer-Geschwindigkeit:"
+      - "<green>%items% Items<dark_gray> alle <green>%time%"
+      - ""
+      - "<dark_gray>Klicke rechts für Upgrade →"
+    
+    # Max Level Item
+    max-level-name: "✦ Maximales Level: %level% ✦"
+    max-level-lore:
+      - ""
+      - "<gold>Diese Chest ist bereits maximal upgradet!"
+      - "<dark_gray>Genießen Sie die beste Transfer-Geschwindigkeit!"
+      - ""
+      - "<green>%items% Items<dark_gray> alle <green>%time%"
+    
+    # Next Level Item (Upgrade Button)
+    next-level-name: "➜ Nächstes Level: %level%"
+    next-level-lore:
+      - ""
+      - "<dark_gray>Transfer-Geschwindigkeit:"
+      - "<green>%items% Items<dark_gray> alle <green>%time%"
+      - ""
+      - "<gold>Kosten: %cost% %currency%"
+      - "<dark_gray>Du besitzt: <aqua>%have% %currency%"
+      - ""
+      - "<green><italic:false>✔ Klicke zum Upgraden!"
+      - "<red><italic:false>✘ Nicht genug %currency%"
+    
+    # Arrow Item
+    arrow-name: "<gold><bold>→ Upgrade →"
+    arrow-lore:
+      - "<dark_gray>Klicke auf das nächste"
+      - "<dark_gray>Level um zu upgraden!"
+    
+    # Double Chest Upgrade Item (Receiver only)
+    double-chest-name-on: "<green><bold>✓ Doppelkisten-Upgrade: ON"
+    double-chest-lore-on:
+      - ""
+      - "<green>Doppelkisten sind erlaubt!"
+      - "<dark_gray>Diese Chest kann mehrere Kisten daneben haben."
+      - ""
+      - "<dark_gray>Kosten: Bereits aktiviert!"
+    
+    double-chest-name-off: "<gold><bold>Doppelkisten-Upgrade: OFF"
+    double-chest-lore-off:
+      - ""
+      - "<gold>Erlaube Doppelkisten bei dieser Kiste"
+      - "<dark_gray>Spieler können Kisten daneben platzieren"
+      - ""
+      - "<gold>Kosten: %cost% %currency%"
+      - ""
+      - "<green><italic:false>✔ Klicke zum Aktivieren!"
+      - "<red><italic:false>✘ Nicht genug %currency%"
+
+# ==================== SYSTEM ====================
+system:
+  # Minimale Distanz zwischen zwei Chests (in Blöcken)
+  min-distance: 5
+  
+  # Maximale Verbindungen pro Spieler
+  max-connections: 5
+  
+  # Welt-spezifische Einstellungen
+  allow-nether: true
+  allow-end: true
+  
+  # Item-Transfer-Limits
+  enable-send-limit: true
+  max-items-per-transfer: 4
+  transfer-interval: 40  # in Ticks (40 Ticks = 2 Sekunden)
+  
+  # Upgrade-System
+  enable-upgrades: true
+
+# ==================== UPGRADES ====================
+upgrades:
+  # Max-Level: Wie viele Level können upgradet werden?
+  max-levels: 6
+  
+  # Währung: DIAMOND, EMERALD, NETHER_STAR, etc. ODER "VAULT_ECONOMY" für Vault Economy Plugin
+  currency: DIAMOND
+  
+  level-2:
+    cost: 16
+    items: 8
+  level-3:
+    cost: 32
+    items: 16
+  level-4:
+    cost: 48
+    items: 32
+  level-5:
+    cost: 64
+    items: 64
+  level-6:
+    cost: 96
+    items: 96
+  
+  # Double-Chest-Upgrade Kosten
+  double-chest:
+    enabled: true  # Setze auf false um dieses Upgrade zu deaktivieren
+    cost: 10
+    currency: DIAMOND  # Kann override von global currency
+    required-level: 1  # Minimum Level des SENDER zum freischalten
+
+# ==================== DISPLAY ====================
+display:
+  # Display-Typ: "BLOCK_DISPLAY" oder "PARTICLES"
+  # - BLOCK_DISPLAY: Zeigt Block über der Chest  (Standard, beste Kompatibilität)
+  # - PARTICLES: Zeigt Partikel über der Chest (moderner Look, kann Performance beeinflussen)
+  type: BLOCK_DISPLAY
+
+  # ==================== BLOCK DISPLAY (nur wenn type: BLOCK_DISPLAY) ====================
+  block-display:
+    # Höhe des Block Displays über der Kiste (in Blöcken)
+    height-offset: 1.2
+    
+    # X/Z Offsets für das Display
+    x-offset: 0.35
+    z-offset: 0.35
+    
+    # Größe Block Display
+    scale: 0.3
+    
+    # Rotation in Grad (0-360)
+    rotation: 0
+    
+    # Materialien für Block Displays pro Level
+    materials:
+      # SENDER Chests (blaue Varianten)
+      sender:
+        level-1: RED_CONCRETE
+        level-2: LIME_CONCRETE
+        level-3: CYAN_CONCRETE
+        level-4: MAGENTA_CONCRETE
+        level-5: YELLOW_CONCRETE
+        level-6: RED_CONCRETE
+      # RECEIVER Chests (orange/gold Varianten)
+      receiver:
+        level-1: ORANGE_CONCRETE
+        level-2: LIME_CONCRETE
+        level-3: CYAN_CONCRETE
+        level-4: MAGENTA_CONCRETE
+        level-5: YELLOW_CONCRETE
+        level-6: RED_CONCRETE
+
+  # ==================== PARTICLES (nur wenn type: PARTICLES) ====================
+  particles:
+    
+    # === DISPLAY-PARTICLES über der Chest (ersetzt BlockDisplay) ===
+    display:
+      # Höhe der Display-Partikel über der Chest (in Blöcken)
+      height-offset: 1.2
+      
+      # X/Z Offsets für Display-Partikel
+      x-offset: 0.35
+      z-offset: 0.35
+      
+      # Display-Partikel-Typen pro Level - Minecraft Schreibweise
+      materials:
+        sender:
+          level-1: glow
+          level-2: glow
+          level-3: glow
+          level-4: glow
+          level-5: glow
+          level-6: glow
+        receiver:
+          level-1: glow
+          level-2: glow
+          level-3: glow
+          level-4: glow
+          level-5: glow
+          level-6: glow
+      
+      # Anzahl Partikel pro Spawn
+      particle-count: 3
+      
+      # Spread der Display-Partikel (0.0 - 1.0)
+      particle-spread: 0.1
+    
+    # === CONNECTION-PARTICLES zwischen verknüpften Chests ===
+    connection:
+      # Partikel-Linie zwischen Chests aktivieren/deaktivieren
+      enabled: true
+      
+      # Dichtegrad der Partikel-Verbindungslinie (höher = mehr Partikel)
+      particle-density: 2
+      
+      # Höhe der Verbindungs-Linie über der Chest
+      height-offset: 0.5
+      
+      # X/Z Offsets für Verbindungs-Partikel
+      x-offset: 0.0
+      z-offset: 0.0
+      
+      # Partikel-Typ für Connection-Linie (alle Level nutzen diesen Typ)
+      particle-type: dust
+      
+      # Anzahl Partikel für Connection-Linie
+      particle-count: 2
+      
+      # Spread für Connection-Linie
+      particle-spread: 0.0
+
+# ==================== DATABASE ====================
+database:
+  # Speicher-Typ: "YAML" oder "MYSQL"
+  type: MYSQL
+  
+  # YAML Speicherung (Standard)
+  yaml:
+    file: "chests.yml"
+  
+  # MySQL Speicherung (optional)
+  mysql:
+    host: "138.201.17.99"
+    port: 3306
+    database: "Datenbank"
+    username: "Zockerlord15"
+    password: "Minecraft1234"
+    table-prefix: "portalchest_"
+    
+    # Verbindungs-Pool
+    connection-pool-size: 5
+    connection-timeout: 30000  # ms
+
+# ==================== TELEPORT SOUND ====================
+teleport-sound:
+  # Sound aktivieren/deaktivieren
+  enabled: true
+  
+  # Sound-Typ: Akzeptiert Minecraft-Sound-Namen im Format "entity.enderman.teleport" oder "ENTITY_ENDERMAN_TELEPORT"
+  # Alle verfügbaren Sounds: https://minecraft.wiki/w/Sounds.json
+  # Beispiele:
+  # - "entity.enderman.teleport" oder "ENTITY_ENDERMAN_TELEPORT"
+  # - "ambient.cave" oder "AMBIENT_CAVE"
+  # - "entity.ender_dragon.growl"
+  # - "entity.player.teleport"
+  # - "block.amethyst_block.chime"
+  sound-type: ambient.soul_sand_valley.mood
+  
+  # Lautstärke (0.0 - 2.0, Standard: 0.6)
+  volume: 0.6
+  
+  # Pitch (0.5 - 2.0, Standard: 1.0, höher = schneller/höher)
+  pitch: 1.0

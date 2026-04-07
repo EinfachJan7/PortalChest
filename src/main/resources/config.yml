@@ -410,11 +410,11 @@ database:
   
   # MySQL Speicherung (optional)
   mysql:
-    host: "138.201.17.99"
+    host: ""
     port: 3306
-    database: "Datenbank"
-    username: "Zockerlord15"
-    password: "Minecraft1234"
+    database: ""
+    username: ""
+    password: ""
     table-prefix: "portalchest_"
     
     # Verbindungs-Pool

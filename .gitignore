@@ -28,7 +28,3 @@ build/
 plugins/
 logs/
 cache/
-
-# Configuration
-config.yml
-chests.yml

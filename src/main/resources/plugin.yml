@@ -1,0 +1,20 @@
+name: PortalChest
+version: 1.0.0
+description: "Portal Chest System mit MiniMessage, Block Displays & YAML-Speicherung"
+author: JankR
+main: dev.jankr.portalchest.PortalChestPlugin
+api-version: "1.13"
+
+commands:
+  portalchest:
+    description: "Portal Chest Befehl"
+    usage: "/portalchest [help|trust|untrust|accept|decline|unlink|list|info|give|reset]"
+    aliases: [pc]
+
+permissions:
+  portalchest.use:
+    description: "Benutze das Portal Chest System"
+    default: true
+  portalchest.admin:
+    description: "Admin-Befehle für Portal Chest"
+    default: op

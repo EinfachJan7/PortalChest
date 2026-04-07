@@ -1,0 +1,34 @@
+# Git ignore file
+*.class
+*.jar
+*.zip
+target/
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+.DS_Store
+*~
+.vscode/
+out/
+
+# Maven
+dependency-reduced-pom.xml
+pom.xml.tag
+pom.xml.asc
+pom.xml.releaseBackup
+release.properties
+
+# IDE
+.gradle/
+build/
+
+# Plugins
+plugins/
+logs/
+cache/
+
+# Configuration
+config.yml
+chests.yml

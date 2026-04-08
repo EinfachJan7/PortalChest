@@ -34,22 +34,35 @@ public class PortalChestPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Manager initialisieren
+        // Manager initialisieren (REIHENFOLGE IST WICHTIG!)
         this.configManager = new ConfigManager(this);
         this.configManager.loadConfig();
         
-        this.dataManager = new DataManager(this);
+        // DatabaseManager MUSS VOR DataManager kommen
         this.databaseManager = new DatabaseManager(this);
+        
+        // DataManager DANACH initialisieren
+        this.dataManager = new DataManager(this);
+        
+        // Andere Manager
         this.displayManager = new DisplayManager(this, this.configManager);
         this.particleManager = new ParticleManager(this);
         this.soundManager = new SoundManager(this);
         this.upgradeGUI = new UpgradeGUI(this);
 
-        // Economy-Support initialisieren (falls Vault Economy verwendet wird)
+        // Economy-Support initialisieren
         EconomyUtil.setupEconomy(this);
 
-        // Daten laden
+        // Daten laden (wird automatisch YAML oder MySQL laden basierend auf Config)
+        getLogger().info("========================================");
+        getLogger().info("Lade Chests aus " + configManager.getDatabaseType() + "...");
+        long startTime = System.currentTimeMillis();
+        
         dataManager.loadData();
+        
+        long loadTime = System.currentTimeMillis() - startTime;
+        getLogger().info("✓ " + dataManager.getAllChests().size() + " Chests geladen (" + loadTime + "ms)");
+        getLogger().info("========================================");
         
         // Displays für gespeicherte Chests wiederherstellen
         dataManager.restoreAllDisplays();
@@ -117,16 +130,6 @@ public class PortalChestPlugin extends JavaPlugin {
                 }
             }
         }, 20L, 20L);  // Alle 20 Ticks (1 Sekunde)
-
-        // Connection-Partikel-Verbindungen Task: Alle 100 Ticks (5 Sekunden)
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
-            // Zeichne Partikelverbindungen für alle verknüpften Chests
-            for (PortalChest chest : dataManager.getAllChests()) {
-                if (chest.getType() == PortalChest.ChestType.SENDER && chest.getLinkedChest() != null) {
-                    particleManager.drawConnectionLine(chest, chest.getLinkedChest());
-                }
-            }
-        }, 100L, 100L);  // Alle 100 Ticks (5 Sekunden)
     }
 
     private void registerRecipes() {
@@ -171,44 +174,65 @@ public class PortalChestPlugin extends JavaPlugin {
      * Laden alle Manager neu (für /reload Befehl)
      */
     public void reloadPluginConfig() {
-        getLogger().info("Lade komplette Config neu...");
+        getLogger().info("========================================");
+        getLogger().info("Starte komplette Config/Datenbank-Reload...");
+        long startTime = System.currentTimeMillis();
         
         try {
-            // Speichere Daten vorher
+            // 1. Speichere Daten vorher
             if (dataManager != null) {
                 dataManager.saveData();
             }
             
-            // Schließe alte Datenbankverbindung
+            // 2. Cleaere ALLE Displays
+            if (displayManager != null) {
+                displayManager.clearAllDisplays();
+                getLogger().info("✓ Alle Displays gelöscht");
+            }
+            
+            // 3. Schließe alte Datenbankverbindung
             if (databaseManager != null) {
                 databaseManager.shutdown();
             }
             
-            // Reload ConfigManager
+            // 4. Reload ConfigManager
             configManager.reloadConfig();
+            getLogger().info("✓ Config neu geladen");
             
-            // Reinitialize DatabaseManager mit neuer Config
+            // 5. Reinitialize DatabaseManager mit neuer Config
             this.databaseManager = new DatabaseManager(this);
+            getLogger().info("✓ DatabaseManager neu initialisiert");
             
-            // Update DisplayManager falls Display-Settings sich geändert haben
+            // 6. Update Manager
             displayManager = new DisplayManager(this, configManager);
-            
-            // Update ParticleManager falls Particle-Settings sich geändert haben
             particleManager = new ParticleManager(this);
-            
-            // Update SoundManager falls Sound-Settings sich geändert haben
             soundManager = new SoundManager(this);
+            getLogger().info("✓ Alle Manager neu initialisiert");
             
-            // Reload Daten
-            dataManager.loadData();
+            // 7. Reload Daten aus Datenbank
+            if ("MYSQL".equalsIgnoreCase(configManager.getDatabaseType())) {
+                // MySQL: Starte neu die Datenbankverbindung
+                databaseManager.loadChestData();
+                getLogger().info("✓ MySQL-Daten neu geladen");
+            } else {
+                // YAML: Lade Datei neu
+                dataManager.reloadData();
+                getLogger().info("✓ YAML-Daten neu geladen");
+            }
             
-            // Restauriere Displays
+            // 8. Restauriere ALLE Displays
             dataManager.restoreAllDisplays();
+            getLogger().info("✓ Alle Displays wiederhergestellt");
             
-            getLogger().info("✓ Config erfolgreich neu geladen!");
+            long reloadTime = System.currentTimeMillis() - startTime;
+            getLogger().info("========================================");
+            getLogger().info("✓ CONFIG/DATENBANK-RELOAD ABGESCHLOSSEN!");
+            getLogger().info("Reload-Zeit: " + reloadTime + "ms");
+            getLogger().info("Chests geladen: " + dataManager.getAllChests().size());
+            getLogger().info("========================================");
             
         } catch (Exception e) {
-            getLogger().severe("Fehler beim Reload der Config!");
+            getLogger().severe("❌ FEHLER beim Reload der Config!");
             e.printStackTrace();
         }
     }

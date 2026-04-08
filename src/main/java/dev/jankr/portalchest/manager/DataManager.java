@@ -130,6 +130,27 @@ public class DataManager {
     }
 
     /**
+     * Lädt Daten während /reload - verbesserte Version
+     */
+    public void reloadData() {
+        plugin.getLogger().info("Starte Datei-Reload...");
+        long startTime = System.currentTimeMillis();
+        
+        // Speichere vorher
+        saveData();
+        
+        // Clear und reload
+        lastClicked.clear();
+        chests.clear();
+        
+        // Neu laden
+        loadData();
+        
+        long reloadTime = System.currentTimeMillis() - startTime;
+        plugin.getLogger().info("✓ Datei-Reload abgeschlossen (" + reloadTime + "ms)");
+    }
+
+    /**
      * Setzt Custom Names auf Chest-Blöcken für alle geladenen Chests
      * und spawned Displays für verlinkte Chests
      * (wird beim Server-Start aufgerufen)
@@ -372,43 +393,39 @@ public class DataManager {
     }
 
     private void drawConnectionParticles(Location loc1, Location loc2) {
-        // Async task um mehrmals Partikel zu zeichnen mit Delay
-        plugin.getServer().getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable() {
-            int iterations = 0;
-            final int maxIterations = 5;
+        // Nutze den ParticleManager für die Connection-Linie
+        if (!(plugin instanceof dev.jankr.portalchest.PortalChestPlugin pluginInstance)) {
+            return;
+        }
+        
+        // Finde die Chest-Objekte um drawConnectionLine zu nutzen
+        String key1 = getLocationKey(loc1);
+        String key2 = getLocationKey(loc2);
+        
+        PortalChest sender = chests.get(key1);
+        PortalChest receiver = chests.get(key2);
+        
+        // Zähle in welche Richtung
+        if (sender == null && receiver != null) {
+            sender = receiver.getLinkedChest();
+        }
+        if (receiver == null && sender != null) {
+            receiver = sender.getLinkedChest();
+        }
+        
+        // Spawne die Connection-Linie (5x hintereinander für visuellen Effekt)
+        if (sender != null && receiver != null) {
+            final PortalChest finalSender = sender;
+            final PortalChest finalReceiver = receiver;
+            final dev.jankr.portalchest.PortalChestPlugin pluginInst = (dev.jankr.portalchest.PortalChestPlugin) plugin;
             
-            @Override
-            public void run() {
-                if (iterations >= maxIterations) {
-                    // Task wird nicht mehr wiederholt
-                    return;
-                }
-                
-                double distance = loc1.distance(loc2);
-                int steps = (int) (distance * 2);
-                
-                for (int i = 0; i < steps; i++) {
-                    double progress = (double) i / steps;
-                    double x = loc1.getX() + ((loc2.getX() - loc1.getX()) * progress);
-                    double y = loc1.getY() + ((loc2.getY() - loc1.getY()) * progress);
-                    double z = loc1.getZ() + ((loc2.getZ() - loc1.getZ()) * progress);
-                    
-                    Location particleLoc = new Location(loc1.getWorld(), x, y, z);
-                    loc1.getWorld().spawnParticle(
-                        org.bukkit.Particle.DUST,
-                        particleLoc,
-                        1,
-                        0.5, 0.5, 0.5,
-                        0,
-                        new org.bukkit.Particle.DustOptions(
-                            org.bukkit.Color.fromRGB(148, 0, 211), 1.0f
-                        )
-                    );
-                }
-                
-                iterations++;
+            for (int iteration = 0; iteration < 5; iteration++) {
+                final int delay = iteration * 5; // Verzögerung pro Iteration
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                    pluginInst.getParticleManager().drawConnectionLine(finalSender, finalReceiver);
+                }, delay);
             }
-        }, 0L, 5L); // Starte sofort, dann alle 5 Ticks wiederholen
+        }
     }
 
     public void removePlayerData(UUID uuid) {

@@ -99,7 +99,7 @@ public class DisplayManager {
     }
 
     /**
-     * Spawnt Partikel über einer Chest als Display
+     * Spawnt Partikel über einer Chest als Display - IMMER AN ORT UND STELLE
      */
     public void spawnParticleDisplay(Location chest, int upgradeLevel, String type) {
         double xOffset = configManager.getParticleDisplayXOffset();
@@ -113,12 +113,13 @@ public class DisplayManager {
             String particleType = configManager.getParticleDisplayTypeForLevel(upgradeLevel, isSender);
             org.bukkit.Particle particle = org.bukkit.Particle.valueOf(particleType.toUpperCase());
             
-            displayLoc.getWorld().spawnParticle(particle, displayLoc, configManager.getParticleDisplayCount(), 
-                configManager.getParticleDisplaySpread(), configManager.getParticleDisplaySpread(), configManager.getParticleDisplaySpread());
+            // WICHTIG: Spawn immer mit Count=1 und Spread=0 für EXAKTE Positionen!
+            displayLoc.getWorld().spawnParticle(particle, displayLoc, 1, 
+                0.0, 0.0, 0.0);
         } catch (IllegalArgumentException e) {
             // Fallback auf GLOW wenn Partikeltyp nicht existiert
-            displayLoc.getWorld().spawnParticle(org.bukkit.Particle.GLOW, displayLoc, configManager.getParticleDisplayCount(), 
-                configManager.getParticleDisplaySpread(), configManager.getParticleDisplaySpread(), configManager.getParticleDisplaySpread());
+            displayLoc.getWorld().spawnParticle(org.bukkit.Particle.GLOW, displayLoc, 1, 
+                0.0, 0.0, 0.0);
         }
     }
 

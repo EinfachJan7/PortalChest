@@ -48,63 +48,50 @@ public class DataManager {
     public void loadData() {
         chests.clear();
         
-        if (!chestsFile.exists()) {
+        // Nutze DatabaseManager um Daten zu laden (YAML oder MySQL)
+        if (!(plugin instanceof dev.jankr.portalchest.PortalChestPlugin pluginInstance)) {
+            plugin.getLogger().warning("❌ FEHLER: Plugin ist nicht PortalChestPlugin!");
+            return;
+        }
+        
+        dev.jankr.portalchest.manager.DatabaseManager databaseManager = pluginInstance.getDatabaseManager();
+        if (databaseManager == null) {
+            plugin.getLogger().warning("❌ FEHLER: DatabaseManager ist null!");
+            return;
+        }
+        
+        // Lade alle Chests über DatabaseManager
+        List<PortalChest> loadedChests = databaseManager.loadAllChests();
+        
+        if (loadedChests == null || loadedChests.isEmpty()) {
             plugin.getLogger().info("ℹ Keine gespeicherten Chests gefunden.");
             return;
         }
 
-        Map<String, Object> data = DataUtil.loadYaml(chestsFile);
-        if (data == null || data.isEmpty()) {
-            plugin.getLogger().warning("⚠ Config-Datei leer oder null!");
-            return;
-        }
+        plugin.getLogger().info("Lade " + loadedChests.size() + " Chests aus Datenbank...");
 
-        plugin.getLogger().info("Lade " + data.size() + " Chests aus Datei...");
-
-        // Schritt 1: Lade alle Chests
-        for (String key : data.keySet()) {
+        // Schritt 1: Registriere alle Chests
+        int loadCount = 0;
+        for (PortalChest chest : loadedChests) {
             try {
-                Map<String, Object> chestData = (Map<String, Object>) data.get(key);
-                PortalChest chest = DataUtil.deserializeChest(chestData, plugin);
-                if (chest != null) {
-                    chests.put(key, chest);
-                    plugin.getLogger().info("✓ Chest geladen: " + key + " (Level " + chest.getUpgradeLevel() + ")");
-                } else {
-                    plugin.getLogger().warning("❌ Chest konnte nicht deserialisiert werden: " + key);
-                }
+                String locationKey = getLocationKey(chest.getLocation());
+                chests.put(locationKey, chest);
+                loadCount++;
+                plugin.getLogger().info("✓ Chest geladen: " + locationKey + " (Level " + chest.getUpgradeLevel() + ")");
             } catch (Exception e) {
-                plugin.getLogger().warning("❌ Fehler beim Laden der Chest: " + key + " - " + e.getMessage());
+                plugin.getLogger().warning("❌ Fehler beim Registrieren der Chest: " + e.getMessage());
                 e.printStackTrace();
             }
         }
 
-        // Schritt 2: Stelle Linked-Beziehungen wieder her
+        // Schritt 2: Stelle Linked-Beziehungen wieder her (über DatabaseManager)
         int linkedCount = 0;
-        for (String key : data.keySet()) {
-            try {
-                Map<String, Object> chestData = (Map<String, Object>) data.get(key);
-                if (chestData.containsKey("linked-location")) {
-                    PortalChest chest = chests.get(key);
-                    if (chest != null) {
-                        Map<String, Object> linkedLocData = (Map<String, Object>) chestData.get("linked-location");
-                        org.bukkit.Location linkedLoc = DataUtil.deserializeLocation(linkedLocData);
-                        if (linkedLoc != null) {
-                            String linkedKey = getLocationKey(linkedLoc);
-                            PortalChest linkedChest = chests.get(linkedKey);
-                            if (linkedChest != null) {
-                                chest.setLinkedChest(linkedChest);
-                                linkedCount++;
-                                plugin.getLogger().info("✓ Link wiederhergestellt: " + key + " ↔ " + linkedKey);
-                            } else {
-                                plugin.getLogger().warning("❌ Linked-Chest nicht gefunden: " + linkedKey + " (für " + key + ")");
-                                chest.setLinkedChest(null);
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                plugin.getLogger().warning("❌ Fehler beim Wiederherstellen der Link für: " + key + " - " + e.getMessage());
-                e.printStackTrace();
+        for (PortalChest chest : loadedChests) {
+            if (chest.getLinkedChest() != null) {
+                linkedCount++;
+                String key = getLocationKey(chest.getLocation());
+                String linkedKey = getLocationKey(chest.getLinkedChest().getLocation());
+                plugin.getLogger().info("✓ Link wiederhergestellt: " + key + " ↔ " + linkedKey);
             }
         }
 
@@ -126,28 +113,39 @@ public class DataManager {
         // Speichere sofort, um saubere Linked-Beziehungen zu haben
         saveData();
 
-        plugin.getLogger().info("✓ Chests geladen: " + chests.size() + " gesamt, " + linkedCount + " Links wiederhergestellt, " + brokenCount + " kaputte Links repariert");
+        plugin.getLogger().info("========================================");
+        plugin.getLogger().info("✓ Chests geladen: " + loadCount + " gesamt");
+        plugin.getLogger().info("✓ Links wiederhergestellt: " + linkedCount);
+        plugin.getLogger().info("✓ Kaputte Links repariert: " + brokenCount);
+        plugin.getLogger().info("========================================");
     }
 
     /**
-     * Lädt Daten während /reload - verbesserte Version
+     * Lädt Daten während /reload - verbesserte Version mit DatabaseManager
      */
     public void reloadData() {
+        plugin.getLogger().info("========================================");
         plugin.getLogger().info("Starte Datei-Reload...");
         long startTime = System.currentTimeMillis();
         
-        // Speichere vorher
-        saveData();
-        
-        // Clear und reload
-        lastClicked.clear();
-        chests.clear();
-        
-        // Neu laden
-        loadData();
-        
-        long reloadTime = System.currentTimeMillis() - startTime;
-        plugin.getLogger().info("✓ Datei-Reload abgeschlossen (" + reloadTime + "ms)");
+        try {
+            // Speichere vorher
+            saveData();
+            
+            // Clear und reload
+            lastClicked.clear();
+            chests.clear();
+            
+            // Neu laden über DatabaseManager
+            loadData();
+            
+            long reloadTime = System.currentTimeMillis() - startTime;
+            plugin.getLogger().info("✓ Datei-Reload abgeschlossen (" + reloadTime + "ms)");
+            plugin.getLogger().info("========================================");
+        } catch (Exception e) {
+            plugin.getLogger().severe("❌ Fehler beim Reload!");
+            e.printStackTrace();
+        }
     }
 
     /**

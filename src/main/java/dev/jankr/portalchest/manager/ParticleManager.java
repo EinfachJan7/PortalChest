@@ -30,14 +30,20 @@ public class ParticleManager {
             return;
         }
 
-        Location start = senderChest.getLocation().clone().add(0.5, configManager.getConnectionParticleHeightOffset(), 0.5);
-        Location end = receiverChest.getLocation().clone().add(0.5, configManager.getConnectionParticleHeightOffset(), 0.5);
+        Location start = senderChest.getLocation().clone();
+        Location end = receiverChest.getLocation().clone();
+
+        // Verschiebe zu Chest-Mittelpunkt
+        start.add(0.5, 0.5, 0.5);
+        end.add(0.5, 0.5, 0.5);
 
         // Berechne die Distanz zwischen den Chests
         double distance = start.distance(end);
-        int steps = Math.max(1, (int) (distance * configManager.getConnectionParticleDensity()));
+        
+        // Höhere Dichte = mehr Partikel pro Block
+        int steps = Math.max(5, (int) (distance * configManager.getConnectionParticleDensity()));
 
-        // Zeichne eine Linie aus Partikeln
+        // Zeichne eine Linie aus Partikeln - PRÄZISE POSITIONEN
         for (int i = 0; i <= steps; i++) {
             double progress = (double) i / steps;
             
@@ -46,8 +52,10 @@ public class ParticleManager {
             double z = start.getZ() + (end.getZ() - start.getZ()) * progress;
             
             Location particleLocation = new Location(start.getWorld(), x, y, z);
+            
+            // Spawne mit Count=1 und Spread=0 für stabile Linie
             spawnParticleWithType(particleLocation, configManager.getConnectionParticleType(), 
-                configManager.getConnectionParticleCount(), configManager.getConnectionParticleSpread());
+                1, 0.0);
         }
     }
 
